@@ -1,0 +1,40 @@
+module cov1(
+input clk,
+input rst_n,
+input [7:0] data,
+output logic buffer_full,
+output logic buffer_empty
+);
+
+`ifndef testbench
+localparam BUFFER_SIZE=140;
+`else
+localparam BUFFER_SIZE=10;
+`endif
+logic [7:0] buffer [0:BUFFER_SIZE-1] ;//each pixel 8 bits, 5*28 buffer 
+logic buffer_addr [$clog2(BUFFER_SIZE):0]; //trace the current 
+logic signed [7:0] weight_1 [0:24];
+logic signed [7:0] weight_2 [0:24];
+logic signed [7:0] weight_3 [0:24];
+
+typedef enum logic [1:0] {
+	BUFFER_NOT_FULL = 0,
+	BUFFER_FULL = 1,
+	CAL = 2
+} cov_state_t;
+cov_state_t cov_state, cov_state_nxt;
+
+always_comb //state_machine
+begin
+	cov_state_nxt = cov_state;
+	if(!rst_n) cov_state_nxt = BUFFER_NOT_FULL;
+	else begin
+		case(cov_state)
+			BUFFER_NOT_FULL: cov_state_nxt = (buffer_addr == BUFFER_SIZE-1) ? BUFFER_FULL : BUFFER_NOT_FULL;
+			BUFFER_FULL : cov_state_nxt = CAL;
+			CAL : cov_state_nxt = buffer_empty ? BUFFER_NOT_FULL : CAL;
+			default: cov_state_nxt = BUFFER_NOT_FULL;
+		endcase
+	end
+end
+endmodule

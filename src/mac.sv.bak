@@ -1,0 +1,4 @@
+module mac(
+input clk
+);
+endmodule

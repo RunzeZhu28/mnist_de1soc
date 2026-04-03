@@ -1,0 +1,6 @@
+module mnist(
+input clk,
+output decision
+);
+
+endmodule
