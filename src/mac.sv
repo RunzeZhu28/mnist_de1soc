@@ -1,12 +1,13 @@
 module mac(
 input clk,
 input rst_n,
-input [7:0] i_weight [0:24], //5*5 weight
-input [7:0] i_fmap [0:24],   //5*5 feature map
+input signed [7:0] i_weight [0:24], //5*5 weight
+input signed [8:0] i_fmap [0:24],   //5*5 feature map
 input i_mac_enable,
 input i_last_col,
-output logic signed [19:0] o_mac, //MAC output
-output logic o_mac_done
+output logic signed [31:0] o_mac, //MAC output
+output logic o_mac_done,
+output logic o_valid
 );
 
 always_ff @(posedge clk or negedge rst_n)
@@ -14,9 +15,10 @@ begin
 	if(!rst_n) begin
 		o_mac <= 20'b0;
 		o_mac_done <= 0;
+		o_valid <= 0;
 	end
 	else begin
-		if(i_mac_enable == 1'b1) begin
+		if(i_mac_enable) begin
 			o_mac <= i_weight[0]*i_fmap[0] + i_weight[1]*i_fmap[1] +
                  i_weight[2]*i_fmap[2] + i_weight[3]*i_fmap[3] +
                  i_weight[4]*i_fmap[4] + i_weight[5]*i_fmap[5] +
@@ -31,10 +33,12 @@ begin
                  i_weight[22]*i_fmap[22] + i_weight[23]*i_fmap[23] +
                  i_weight[24]*i_fmap[24];
 		   o_mac_done <= i_last_col;
+			o_valid    <= 1'b1;
 		end
 		else begin
 			o_mac <= 0; 
 			o_mac_done <= 0;
+			o_valid    <= 0;
 		end
 		
 	end
