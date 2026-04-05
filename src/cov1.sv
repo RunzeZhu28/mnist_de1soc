@@ -88,7 +88,7 @@ always_comb  begin
 	else begin
 		case(cov_state)
 			BUFFER_UPDATE: cov_state_nxt = (wr_buffer_addr == BUFFER_SIZE-1) ? CAL: BUFFER_UPDATE;
-			CAL : cov_state_nxt = o_buffer_empty ? BUFFER_UPDATE : CAL;
+			CAL : cov_state_nxt = (r_buffer_addr == BUFFER_LENGTH - 5) ? BUFFER_UPDATE : CAL;
 			default: cov_state_nxt = BUFFER_UPDATE;
 		endcase
 	end
@@ -142,23 +142,21 @@ always_comb begin
     feature_map[24] = {1'b0, buffer[r_buffer_addr_5+4]};
 end
 
+assign last_col = (r_buffer_addr == BUFFER_LENGTH - 5);
+
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         r_buffer_addr <= 0;
-        last_col      <= 0;
     end
     else if(mac_enable) begin
         if((r_buffer_addr != BUFFER_LENGTH - 5) && !last_col ) begin
             r_buffer_addr <= r_buffer_addr + 1;
-            last_col      <= 0;
         end
         else begin
             r_buffer_addr <= 0;
-            last_col      <= 1;
         end
     end 
 	 else begin
-		last_col  <= 0;
 		r_buffer_addr <= 0;
 	 end
 end

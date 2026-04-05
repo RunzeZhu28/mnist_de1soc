@@ -15,7 +15,11 @@ logic signed [31:0] cov_result_1, cov_result_2, cov_result_3;
 logic valid_1,valid_2,valid_3;
 logic frame_start; //pulse
 logic frame_started;
-
+logic signed [31:0] pool_data_1 [0:3];
+logic signed [31:0] pool_data_2 [0:3];
+logic signed [31:0] pool_data_3 [0:3];
+logic pool_en_1, pool_en_2, pool_en_3;
+logic signed [31:0] max_pool_data_1, max_pool_data_2, max_pool_data_3;
 
 initial begin
 	$readmemh("E:\\mnist\\mnist_data.txt", i_data); //5
@@ -61,8 +65,48 @@ cov1 u_cov1(
 	.o_valid_3(valid_3)
 );
 
+cov1_ram	u_cov1_ram_1(
+	.clk(clk),
+	.rst_n(rst_n),
+	.i_cov_result(cov_result_1),
+	.i_valid(valid_1),
+	.o_pool_data(pool_data_1),
+	.o_pool_en(pool_en_1)
+);
 
+max_pooling u_max_pooling_1(
+	.i_data(pool_data_1),
+	.i_pool_en(pool_en_1),
+	.o_pool_data(max_pool_data_1)
+);
 
+cov1_ram	u_cov1_ram_2(
+	.clk(clk),
+	.rst_n(rst_n),
+	.i_cov_result(cov_result_2),
+	.i_valid(valid_2),
+	.o_pool_data(pool_data_2),
+	.o_pool_en(pool_en_2)
+);
 
+max_pooling u_max_pooling_2(
+	.i_data(pool_data_2),
+	.i_pool_en(pool_en_2),
+	.o_pool_data(max_pool_data_2)
+);
 
+cov1_ram	u_cov1_ram_3(
+	.clk(clk),
+	.rst_n(rst_n),
+	.i_cov_result(cov_result_3),
+	.i_valid(valid_3),
+	.o_pool_data(pool_data_3),
+	.o_pool_en(pool_en_3)
+);
+
+max_pooling u_max_pooling_3(
+	.i_data(pool_data_3),
+	.i_pool_en(pool_en_3),
+	.o_pool_data(max_pool_data_3)
+);
 endmodule
