@@ -18,6 +18,11 @@ module cov1_ram_tb;
 
     logic signed [31:0] src_img [0:IMG_H-1][0:IMG_W-1];
     logic signed [31:0] golden  [0:POOL_NUM-1][0:3];
+    logic signed [31:0] o_pool_data_0;
+    logic signed [31:0] o_pool_data_1;
+    logic signed [31:0] o_pool_data_2;
+    logic signed [31:0] o_pool_data_3;
+
 
     integer err_cnt;
     integer match_cnt;
@@ -31,6 +36,11 @@ module cov1_ram_tb;
         .o_pool_data (o_pool_data),
         .o_pool_en   (o_pool_en)
     );
+
+    assign o_pool_data_0 = o_pool_data[0];
+    assign o_pool_data_1 = o_pool_data[1];
+    assign o_pool_data_2 = o_pool_data[2];
+    assign o_pool_data_3 = o_pool_data[3];
 
     initial clk = 0;
     always #5 clk = ~clk;
