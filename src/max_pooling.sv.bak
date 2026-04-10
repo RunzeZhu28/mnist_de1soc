@@ -1,0 +1,8 @@
+module max_pooling(
+input clk,
+input rst_n,
+input logic signed [31:0] i_pool_data [0:3],
+output logic o_pool_data
+);
+
+endmodule

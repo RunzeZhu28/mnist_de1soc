@@ -1,8 +1,8 @@
-module mac(
+module mac #(parameter FMAP_WIDTH = 8)(
 input clk,
 input rst_n,
 input signed [7:0] i_weight [0:24], //5*5 weight
-input signed [8:0] i_fmap [0:24],   //5*5 feature map
+input signed [FMAP_WIDTH:0] i_fmap [0:24],   //5*5 feature map
 input i_mac_enable,
 input i_last_col,
 output logic signed [31:0] o_mac, //MAC output

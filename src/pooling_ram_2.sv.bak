@@ -1,0 +1,77 @@
+module pooling_ram(
+input clk,
+input rst_n,
+input signed [31:0] i_pool_data,
+input i_wr_valid,
+input i_rd_ready,
+input i_buffer_full,
+output logic signed [31:0] o_ram_data,
+output logic o_ram_rd_data_valid,
+output o_ram_almost_full
+);
+
+
+localparam RAM_SIZE = 144; //12*12
+localparam RAM_WIDTH = $clog2(RAM_SIZE);
+logic [9 : 0] ram_rdaddress, ram_wraddress;
+logic rd_en;
+logic finished; 
+logic ram_en;
+
+assign o_ram_almost_full = (finished && ( ram_wraddress == ram_rdaddress - 3));
+assign rd_en = i_rd_ready && (finished || (ram_wraddress > ram_rdaddress));
+//assign rd_en = i_rd_ready && finished;
+
+always_ff @(posedge clk or negedge rst_n) begin
+	if(!rst_n) begin 
+		ram_wraddress <= 0;
+		finished <= 0;
+	end
+	else if (rd_en && (ram_rdaddress == RAM_SIZE - 1)) begin
+    finished <= 0;
+	end
+	else if(i_wr_valid) begin
+		if( ram_wraddress == RAM_SIZE - 1 ) begin
+			ram_wraddress <= 0;
+			finished <= 1;
+		end
+		else begin
+			ram_wraddress <= ram_wraddress + 1;
+			finished <= finished;
+		end
+	end
+	else begin
+		ram_wraddress <= ram_wraddress;
+		finished <= finished;
+	end
+end
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        ram_rdaddress        <= 0;
+        o_ram_rd_data_valid  <= 1'b0;
+		  ram_en               <= 0;
+    end
+    else begin
+		  if(i_buffer_full) begin
+			  ram_rdaddress <= (ram_rdaddress == 0) ? 0 : (ram_rdaddress - 48); //move by one line each time, 12*4=48
+		  end
+        else if(rd_en) begin
+            ram_rdaddress <= (ram_rdaddress == RAM_SIZE-1) ? 0 : (ram_rdaddress + 1);
+        end
+        //ram_en              <= rd_en;    // RAM delay 1 clk cycle
+        //o_ram_rd_data_valid <= ram_en; 
+		  o_ram_rd_data_valid <= rd_en;
+    end
+end
+
+RAM_1 u_ram_1(
+	.clock(clk),
+	.data(i_pool_data),
+	.rdaddress(ram_rdaddress),
+	.rden(rd_en),
+	.wraddress(ram_wraddress),
+	.wren(i_wr_valid),
+	.q(o_ram_data)
+);
+endmodule

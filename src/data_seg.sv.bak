@@ -1,0 +1,7 @@
+module data_seg(
+input clk,
+input rst_n,
+input [7:0] i_data [0:783], //28*28 raw data
+output [
+);
+endmodule

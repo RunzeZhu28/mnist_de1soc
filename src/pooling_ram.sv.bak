@@ -1,0 +1,11 @@
+module pooling_ram(
+input clk,
+input rst_n,
+input signed [31:0] i_pool_data,
+input i_valid,
+output logic signed [31:0] o_pool_data [0:3],
+output logic o_pool_en
+
+);
+
+endmodule

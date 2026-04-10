@@ -1,0 +1,5 @@
+module fc_mac(
+
+);
+
+endmodule

@@ -1,4 +1,4 @@
-module conv1_ram(
+module conv2_ram(
 input clk,
 input rst_n,
 input signed [31:0] i_conv_result,
@@ -7,9 +7,9 @@ output logic signed [31:0] o_pool_data [0:3],
 output logic o_pool_en
 );
 
-localparam RAM_SIZE = 576; //24*24
+localparam RAM_SIZE = 64; //8*8
 localparam RAM_WIDTH = $clog2(RAM_SIZE);
-logic [RAM_WIDTH - 1 : 0] ram_rdaddress, ram_wraddress;
+logic [9 : 0] ram_rdaddress, ram_wraddress;
 logic [1:0] sub_counter,pix_counter; //to count o_pool_data index
 logic rd_en;
 logic finished;
@@ -51,8 +51,8 @@ always_ff @(posedge clk or negedge rst_n) begin
       pool_col        <= 0;
       base_0          <= 0;
       base_1          <= 1;
-      base_2          <= 24;
-      base_3          <= 25;
+      base_2          <= 8;
+      base_3          <= 9;
 		pool_col			 <= 0;
 	end
 	else begin
@@ -63,7 +63,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 						rd_en <= 1;
 						ram_rdaddress <= base_0;
 						sub_counter <= sub_counter + 1; //overflow go back to 0
-						base_0   <= (pool_col < 11)  ? (base_0 + 2) :  (((base_0 + 26) > RAM_SIZE - 1) ? 0 : (base_0 + 26));
+						base_0   <= (pool_col < 3)  ? (base_0 + 2) :  (((base_0 + 10) > RAM_SIZE - 1) ? 0 : (base_0 + 10));
 					end
 					else begin
 						rd_en <= 0;
@@ -75,7 +75,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 						rd_en <= 1;
 						ram_rdaddress <= base_1;
 						sub_counter <= sub_counter + 1; //overflow go back to 0
-						base_1   <= (pool_col < 11)  ? (base_1 + 2) :  (((base_1 + 26) > RAM_SIZE - 1) ? 0 : (base_1 + 26));
+						base_1   <= (pool_col < 3)  ? (base_1 + 2) :  (((base_1 + 10) > RAM_SIZE - 1) ? 1 : (base_1 + 10));
 					end
 					else begin
 						rd_en <= 0;
@@ -87,7 +87,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 						rd_en <= 1;
 						ram_rdaddress <= base_2;
 						sub_counter <= sub_counter + 1; //overflow go back to 0
-						base_2   <= (pool_col < 11)  ? (base_2 + 2) :  (((base_2 + 26) > RAM_SIZE - 1) ? 0 : (base_2 + 26));
+						base_2   <= (pool_col < 3)  ? (base_2 + 2) :  (((base_2 + 10) > RAM_SIZE - 1) ? 8 : (base_2 + 10));
 					end
 					else begin
 						rd_en <= 0;
@@ -99,8 +99,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 						rd_en <= 1;
 						ram_rdaddress <= base_3;
 						sub_counter <= sub_counter + 1; //overflow go back to 0
-						base_3   <= (pool_col < 11)  ? (base_3 + 2) :  (((base_3 + 26) > RAM_SIZE - 1) ? 0 : (base_3 + 26));
-						pool_col <= (pool_col == 11)  ?  0 : (pool_col + 1);
+						base_3   <= (pool_col < 3)  ? (base_3 + 2) :  (((base_3 + 10) > RAM_SIZE - 1) ? 9 : (base_3 + 10));
+						pool_col <= (pool_col == 3)  ?  0 : (pool_col + 1);
 					end
 					else begin
 						rd_en <= 0;
@@ -112,8 +112,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 					sub_counter 	 <= 0; //overflow go back to 0
 					base_0          <= 0;
 					base_1          <= 1;
-					base_2          <= 24;
-					base_3          <= 25;
+					base_2          <= 8;
+					base_3          <= 9;
 					pool_col        <= 0;
 				end
 			endcase
@@ -126,24 +126,10 @@ always_ff @(posedge clk or negedge rst_n) begin // trace which of four is sendin
 	else pix_counter <= pix_counter;
 end
 
-//always_comb begin
-//	if(!rst_n) begin
-//		o_pool_en   = 0;
-//		for(int i = 0; i<4; i= i+1) begin
-//			o_pool_data[i] = 0;
-//		end
-//	end
-//	else if(ram_en) begin
-//		o_pool_data[pix_counter] = ram_data;
-//		
-//	end
-//	if (pix_counter == 2'b11 && rd_en) o_pool_en = 1;
-//	else o_pool_en  = 0;
-//end
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         for (int i=0; i<4; i=i+1) o_pool_data[i] <= 0;
-        o_pool_en <= 0;
+				o_pool_en <= 0;
     end
     else begin
         o_pool_en <= 0;
